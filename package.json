@@ -1,0 +1,22 @@
+{
+	"name": "atabook-discord-status",
+	"description": "scrapes a personal atabook page to update discord status based on answers to a particular question",
+	"license": "GPLv3",
+	"version": "0.0.1",
+	"author": "hazelune <hazelune0@gmail.com> (https://hazelune.neocities.org)",
+	"scripts": {
+		"lint": "eslint . --ext .ts,.tsx,.js,.jsx"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hazelune/atabook-status.git"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.1.0",
+		"globals": "^17.4.0",
+		"jiti": "^2.6.1",
+		"typescript": "^6.0.2",
+		"typescript-eslint": "^8.58.0"
+	}
+}
