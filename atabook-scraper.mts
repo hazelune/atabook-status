@@ -35,20 +35,25 @@ export async function getAtabookStatus({url, n, tq = "", eq = ""}: AtabookParame
 		if (eq !== "") {
 			statusSelectors.push(`.message:contains('${eq}')`);
 		}
-		// and use that array to formulate the parsing
+		// and use that array to formulate the parsing; selects only those questions that contain answers to the desired questions
 		const messages = $(statusSelectors.join(', '));
 		// for each message
 		const cheerioOutput = messages.map((i, element) => {
 			// get dom of it
 			const $element = $(element)
+			// this part gets submitter and time
 			const $split = $element.find('.split');
 			const submitter = $split.children('strong').text();
 			const time = $split.children('span').attr("data-time");
+
+			// this part gets the actual questions
 			const $statusTextQuestion = $element.find(`.question:contains('${tq}')`);
 			const statusText = tq !== "" ? $statusTextQuestion.children('span').text() : "";
 			const $statusEmojiQuestion = $element.find(`.question:contains('${eq}')`);
 			const statusEmoji = eq !== "" ? $statusEmojiQuestion.children('span').text() : "";
 			const message = $element.find(".message-text").text();
+
+			// create return object
 			return {
 				"submitter": submitter,
 				"time": Number(time),
@@ -58,10 +63,12 @@ export async function getAtabookStatus({url, n, tq = "", eq = ""}: AtabookParame
 			};
 			// console.log($element.find('question'):contains("change my status:");
 		});
-
-		const returnArr = cheerioOutput.toArray();
+		// .sort((a,b) => fn) places a before b if the function return is less than 0 and vice versa if the function return is greater than 0
+		const returnArr = cheerioOutput.toArray().sort((a, b) => {
+			return b.time - a.time
+		}).slice(0, n);
 		
-		if (returnArr.length == 1) {
+		if (returnArr.length === 1) {
 			return returnArr[0];
 		}
 		return returnArr;
@@ -73,6 +80,6 @@ export async function getAtabookStatus({url, n, tq = "", eq = ""}: AtabookParame
 
 console.log(await getAtabookStatus({
 	url: 'https://hazelune.atabook.org',
-	n: 2,
-	tq: 'change my status text:',
+	n: 1,
+	eq: 'change my status emoji:',
 }));

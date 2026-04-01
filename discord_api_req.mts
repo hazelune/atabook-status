@@ -1,8 +1,6 @@
 import dotenv from 'dotenv';
+import { isEqual } from 'lodash-es';
 import { getAtabookStatus } from './atabook-scraper.mts';
-import { getDiscordJson } from '../../neocities/src/js/discord_api.mts';
-
-dotenv.config();
 
 function randomDelay(s: number) {
 	const time = s + (Math.random() * 20);
@@ -10,29 +8,49 @@ function randomDelay(s: number) {
 	return new Promise(resolve => setTimeout(resolve, time*1000));
 }
 
+dotenv.config();
+
 const TOKEN = process.env.TOKEN;
+const USER_URL = "https://discord.com/api/v10/users/@me/settings"
 
-export async function statusChange(discordId: string, atabookUrl: string, textQuestion: string, statusQuestion: string) {
-	const USER_URL = "https://discord.com/api/v10/users/@me/settings"
+interface StatusChangeArguments {
+	discordId: string,
+	atabookUrl: string,
+	textQuestion?: string,
+	emojiQuestion?: string
+}
 
+export async function statusChange({atabookUrl, textQuestion = "", emojiQuestion = ""}: StatusChangeArguments) {
+	// save the original most recent message and catch deviations from it
+	let oldStatusJson = await getAtabookStatus({
+		url: atabookUrl,
+		n: 1,
+		tq: textQuestion,
+		eq: emojiQuestion
+	});
 	while (true) {
 		console.log("loop");
-		const statusJson = await getAtabookStatus(atabookUrl, textQuestion, statusQuestion, 1);
-		const discordJson = await getDiscordJson(discordId);
-		const newStatus = statusJson.statusText;
-		const currentStatus = discordJson.statusText;
-		const newEmoji = statusJson.statusEmoji;
-		const currentEmoji = discordJson.statusEmoji;
-		if (newStatus != currentStatus) {
-			console.log(`updating status to ${newEmoji} ${newStatus}`);
-			const payload = JSON.stringify({
+		const newStatusJson = await getAtabookStatus({
+			url: atabookUrl,
+			n: 1,
+			tq: textQuestion,
+			eq: emojiQuestion
+		});
+		if (!isEqual(newStatusJson, oldStatusJson)) {
+			console.log('these are diff');
+			// deep copies to update what the previous newest message is
+			oldStatusJson = JSON.parse(JSON.stringify(newStatusJson));
+			const payloadJson = {
 				"custom_status": {
-					"text": newStatus,
-					"emoji_name": newEmoji
 				}
-			});
-
-
+			}
+			if (newStatusJson.statusText !== "") {
+				payloadJson.custom_status.text = newStatusJson.statusText;
+			}
+			if (newStatusJson.statusEmoji !== "") {
+				payloadJson.custom_status.emoji_name = newStatusJson.statusEmoji;
+			}
+			const payloadStr = JSON.stringify(payloadJson);
 			fetch(USER_URL, {
 				method: 'PATCH',
 				headers: {
@@ -43,7 +61,7 @@ export async function statusChange(discordId: string, atabookUrl: string, textQu
 					'Referer': 'https://discord.com',
 					'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv146.0) Gecko/20100101 Firefox/146.0',
 				},
-				body: payload,
+				body: payloadStr,
 			});
 		}
 		else {
@@ -52,4 +70,8 @@ export async function statusChange(discordId: string, atabookUrl: string, textQu
 		await randomDelay(20);
 	}
 }
-statusChange("486280933058805793", 'https://hazelune.atabook.org', 'change my status text:', 'change my status emoji:');
+console.log(await statusChange({
+	atabookUrl: 'https://hazelune.atabook.org',
+	textQuestion: 'change my status text:', 
+	emojiQuestion: 'change my status emoji:'
+}));
