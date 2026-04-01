@@ -77,9 +77,3 @@ export async function getAtabookStatus({url, n, tq = "", eq = ""}: AtabookParame
 		
 	}
 }
-
-console.log(await getAtabookStatus({
-	url: 'https://hazelune.atabook.org',
-	n: 1,
-	eq: 'change my status emoji:',
-}));

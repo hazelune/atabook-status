@@ -14,13 +14,13 @@ const TOKEN = process.env.TOKEN;
 const USER_URL = "https://discord.com/api/v10/users/@me/settings"
 
 interface StatusChangeArguments {
-	discordId: string,
+	discordToken: string,
 	atabookUrl: string,
 	textQuestion?: string,
 	emojiQuestion?: string
 }
 
-export async function statusChange({atabookUrl, textQuestion = "", emojiQuestion = ""}: StatusChangeArguments) {
+export async function statusChange({discordToken, atabookUrl, textQuestion = "", emojiQuestion = ""}: StatusChangeArguments) {
 	// save the original most recent message and catch deviations from it
 	let oldStatusJson = await getAtabookStatus({
 		url: atabookUrl,
@@ -54,7 +54,7 @@ export async function statusChange({atabookUrl, textQuestion = "", emojiQuestion
 			fetch(USER_URL, {
 				method: 'PATCH',
 				headers: {
-					'Authorization': TOKEN,
+					'Authorization': discordToken,
 					'Content-Type': 'application/json',
 					'Host': 'discord.com',
 					'Origin': 'https://discord.com',
@@ -70,8 +70,3 @@ export async function statusChange({atabookUrl, textQuestion = "", emojiQuestion
 		await randomDelay(20);
 	}
 }
-console.log(await statusChange({
-	atabookUrl: 'https://hazelune.atabook.org',
-	textQuestion: 'change my status text:', 
-	emojiQuestion: 'change my status emoji:'
-}));

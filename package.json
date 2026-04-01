@@ -4,6 +4,7 @@
 	"license": "GPLv3",
 	"version": "0.0.1",
 	"author": "hazelune <hazelune0@gmail.com> (https://hazelune.neocities.org)",
+	"type": "module",
 	"scripts": {
 		"lint": "eslint . --ext .ts,.tsx,.js,.jsx"
 	},
@@ -20,6 +21,8 @@
 		"typescript-eslint": "^8.58.0"
 	},
 	"dependencies": {
+		"@clack/prompts": "^1.2.0",
+		"conf": "^15.1.0",
 		"lodash-es": "^4.17.23"
 	}
 }
